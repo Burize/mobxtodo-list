@@ -1,0 +1,24 @@
+.todo-list {
+  &__todo{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    cursor: pointer;
+    &_selected {
+      color: red;
+    } 
+  }
+}
+
+.list-todo {
+
+  &__remove-icon {
+    cursor: pointer;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
