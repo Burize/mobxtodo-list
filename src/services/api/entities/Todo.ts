@@ -2,38 +2,34 @@ import { BindAll } from 'lodash-decorators';
 
 import { convertTodoResponse, convertServerTodo } from '../converters';
 import BaseApi from './BaseApi';
-import { map } from 'rxjs/operators';
 import { IServerTodo, FieldForTodoCreation } from '../types/Todo';
 import { convertTodoToRequest } from '../converters/request';
+import { ITodo } from 'shared/types/models';
 
 @BindAll()
 class Todo extends BaseApi {
 
-  public loadTodos() {
-    return this.actions.get<IServerTodo[]>({
-      url: '/notes',
-    }).pipe(
-      map(response => response.data),
-      map(convertTodoResponse),
-    );
+  public async loadCountries(): Promise<ITodo[]> {
+    const response = await this.actions.get<IServerTodo[]>({
+      url: `/notes`,
+    });
+    return this.handleResponse(response, convertTodoResponse);
   }
 
-  public createTodo(fields: FieldForTodoCreation) {
-    return this.actions.post<IServerTodo>({
+  public async createTodo(fields: FieldForTodoCreation) {
+    const response = await this.actions.post<IServerTodo>({
       url: '/note',
       data: convertTodoToRequest(fields),
-    }).pipe(
-      map(response => this.handleResponse(response, convertServerTodo)),
-    );
+    });
+    return this.handleResponse(response, convertServerTodo);
   }
 
-  public deleteTodo(id: string) {
-    return this.actions.delete<void>({
+  public async deleteTodo(id: string) {
+    const response = await this.actions.delete<IServerTodo>({
       url: '/note',
       data: { id },
-    }).pipe(
-      map(response => response.data),
-    );
+    });
+    return this.handleResponse(response);
   }
 }
 

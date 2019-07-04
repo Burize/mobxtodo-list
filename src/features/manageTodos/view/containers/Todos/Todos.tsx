@@ -1,64 +1,68 @@
 import * as React from 'react';
-import { merge } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { useObserver } from 'mobx-react-lite';
 
 import { Spinner, Modal, Button, Alert } from 'shared/view/elements';
-import { useObservable, useCommunicationObserver } from 'shared/helpers/reactive';
-import { ITodo, Message } from 'shared/types/models';
 import { block } from 'shared/helpers/bem';
-import { selectors as messagesSelector } from 'services/messages';
 
 import { TodoList, NewTodo } from '../../components';
-import { selectors, actions } from '../../../state';
 
 import './Todos.scss';
+import { todoStore } from 'features/manageTodos/state';
+import getDeps from 'core/getDeps';
 
 const b = block('todos');
 
+// TODO:REPLACE TO CONTEXT
+const { messageService } = getDeps();
+
 function Todos() {
 
-  const [todos] = useObservable<ITodo[], ITodo>(() => (
-    selectors.selectTodos()
-  ));
-
-  const [loadingTodos] = useCommunicationObserver(() => (
-    selectors.selectCommunication('loadingTodos')
-  ));
-
-  const [creatingTodo] = useCommunicationObserver(() => (
-    selectors.selectCommunication('creatingTodo')
-  ));
+  const [error, setError] = React.useState('');
 
   React.useEffect(() => {
-    actions.loadTodos();
+    todoStore.loadTodos();
   }, []);
 
-  const createTodo = React.useCallback((title: string, description: string) => {
-    actions.createTodo({ title, description });
-  }, []);
+  const todos = useObserver(() => todoStore.todos);
+  const loadingTodos = useObserver(() => todoStore.loadingTodos);
+  React.useEffect(() => {
+    if (loadingTodos.error) {
+      setError(loadingTodos.error);
+    }
+  }, [loadingTodos.error]);
 
-  const deleteTodo = React.useCallback((todoId: string) => {
-    actions.deleteTodo(todoId);
+  const creatingTodo = useObserver(() => todoStore.creatingTodos);
+  const createTodo = React.useCallback(async (title: string, description: string) => {
+    await todoStore.createTodo({ title, description });
   }, []);
+  React.useEffect(() => {
+    if (creatingTodo.error) {
+      setError(creatingTodo.error);
+    }
+  }, [creatingTodo.error]);
 
-  const [error, setError] = useObservable<string, string>((event$) => {
-    return merge(
-      selectors.selectCommunication('creatingTodo').pipe(map(communication => communication.error)),
-      selectors.selectCommunication('loadingTodos').pipe(map(communication => communication.error)),
-      event$);
-  }, '');
+  const deletingTodo = useObserver(() => todoStore.creatingTodos);
+  const deleteTodo = React.useCallback(async (id: string) => {
+    await todoStore.deleteTodo(id);
+  }, []);
+  React.useEffect(() => {
+    if (deletingTodo.error) {
+      setError(deletingTodo.error);
+    }
+  }, [deletingTodo.error]);
 
   const closeErrorModal = React.useCallback(() => {
     setError('');
   }, []);
 
-  const [notification, setNotification] = useObservable<Message | null, Message | null>(
-    (action$) => {
-      return merge(action$, messagesSelector.selectLastMessage());
-    }, null);
+  const notification = useObserver(() => messageService.lastMessage);
+  const [isShowNotification, setIsShowNotification] = React.useState(false);
+  React.useEffect(() => {
+    notification && setIsShowNotification(true);
+  }, [notification]);
 
   const closeNotification = React.useCallback(() => {
-    setNotification(null);
+    setIsShowNotification(false);
   }, []);
 
   return (
@@ -68,7 +72,7 @@ function Todos() {
           <div className={b('new-todo')}>
             <NewTodo onCreate={createTodo} isLoading={creatingTodo.isRequesting} />
           </div>
-          {notification &&
+          {notification && isShowNotification &&
             <Alert
               message={notification.payload.title}
               description={notification.payload.body}

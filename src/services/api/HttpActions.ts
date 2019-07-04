@@ -1,9 +1,8 @@
-import { AxiosRequestConfig } from 'axios';
-import Axios from 'axios-observable';
-import { AxiosObservable } from 'axios-observable/dist/axios-observable.interface'; // 0_0
+import Axios, { AxiosPromise, AxiosRequestConfig, AxiosInstance } from 'axios';
 
 import getEnvParams from 'shared/helpers/getEnvParams';
 
+type AsyncRequest<T> = AxiosPromise<T>;
 type DomainType = 'baseApi' | 'passport' | 'data' | 'subscription';
 
 interface IHttpActionParams {
@@ -14,7 +13,7 @@ interface IHttpActionParams {
 }
 
 class HttpActions {
-  private request: Axios;
+  private request: AxiosInstance;
   private baseURL = getEnvParams().apiUrl;
 
   constructor() {
@@ -27,27 +26,27 @@ class HttpActions {
     this.request = Axios.create(config);
   }
 
-  public get<T>(params: IHttpActionParams): AxiosObservable<T> {
+  public get<T>(params: IHttpActionParams): AsyncRequest<T> {
     const { url, options } = params;
     return this.request.get(url, options);
   }
 
-  public post<T>(params: IHttpActionParams): AxiosObservable<T> {
+  public post<T>(params: IHttpActionParams): AsyncRequest<T> {
     const { url, data, options } = params;
     return this.request.post(url, data, options);
   }
 
-  public patch<T>(params: IHttpActionParams): AxiosObservable<T> {
+  public patch<T>(params: IHttpActionParams): AsyncRequest<T> {
     const { url, data, options } = params;
     return this.request.patch(url, data, options);
   }
 
-  public delete<T>(params: IHttpActionParams): AxiosObservable<T> {
+  public delete<T>(params: IHttpActionParams): AsyncRequest<T> {
     const { url, data, options } = params;
     return this.request.delete(url, { ...options, data });
   }
 
-  public put<T>(params: IHttpActionParams): AxiosObservable<T> {
+  public put<T>(params: IHttpActionParams): AsyncRequest<T> {
     const { url, data, options } = params;
     return this.request.put(url, data, options);
   }

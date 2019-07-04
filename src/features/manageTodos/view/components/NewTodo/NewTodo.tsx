@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { map } from 'rxjs/operators';
 
-import { useObservable } from 'shared/helpers/reactive';
 import { block } from 'shared/helpers/bem';
 import { Button, TextInput, TextArea } from 'shared/view/elements';
 
@@ -17,13 +15,15 @@ interface IProps {
 function NewTodo(props: IProps) {
   const { onCreate, isLoading } = props;
 
-  const [title, setTitle] = useObservable<string, React.ChangeEvent<HTMLInputElement>>((event$) => {
-    return event$.pipe(map(event => event.target.value));
-  }, 'new todo');
+  const [title, setTitle] = React.useState('new todo');
+  const onTitleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(event.target.value);
+  }, []);
 
-  const [description, setDescription] = useObservable<string, React.ChangeEvent<HTMLTextAreaElement>>((event$) => {
-    return event$.pipe(map(event => event.target.value));
-  }, 'write something interesting');
+  const [description, setDescription] = React.useState('write something interesting');
+  const onDescriptionChange = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(event.target.value);
+  }, []);
 
   const createTodo = React.useCallback(() => {
     onCreate(title, description);
@@ -31,8 +31,8 @@ function NewTodo(props: IProps) {
 
   return (
     <div className={b()}>
-      <TextInput onChange={setTitle} value={title} />
-      <TextArea onChange={setDescription} value={description} />
+      <TextInput onChange={onTitleChange} value={title} />
+      <TextArea onChange={onDescriptionChange} value={description} />
       <Button block disabled={isLoading} type="primary" onClick={createTodo}>Create</Button>
     </div>
   );
