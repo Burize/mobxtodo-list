@@ -1,13 +1,13 @@
-## REACTIVE TODO LIST
+## MOBX TODO LIST
 
 Common todo list with create/delete operations. Also, you can receive some push-message.
 
 
 ### Used features
 
-- [RxJS](https://rxjs-dev.firebaseapp.com/) as stream manager;
+- [MobX](https://github.com/mobxjs/mobx) as state manager;
 - Typescript fro type checking;
-- [Axios-observable](https://github.com/zhaosiyang/axios-observable) for handle http actions;
+- [Axios](https://github.com/axios/axios) for handle http actions;
 - [Antd](https://github.com/ant-design/ant-design/) as components kits.
 - ServiceWorker for handle push notifications.
 
